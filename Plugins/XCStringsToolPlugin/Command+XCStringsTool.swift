@@ -3,15 +3,19 @@ import PackagePlugin
 
 protocol PluginContextProtocol {
     var pluginWorkDirectory: PackagePlugin.Path { get }
-    var package: PackagePlugin.Package { get }
+    var packageID: String? { get }
     func tool(named name: String) throws -> PluginContext.Tool
 }
 
-extension PluginContext: PluginContextProtocol { }
+extension PluginContext: PluginContextProtocol {
+    var packageID: String? { `package`.id }
+}
 
 #if canImport(XcodeProjectPlugin)
 import XcodeProjectPlugin
-extension XcodePluginContext: PluginContextProtocol {}
+extension XcodePluginContext: PluginContextProtocol {
+    var packageID: String? { return nil }
+}
 #endif
 
 extension Command {
@@ -51,7 +55,11 @@ extension PluginContextProtocol {
     }
 
     func outputPath(for file: File) -> Path {
-        outputDirectory.appending(subpath: `package`.id).appending("\(file.path.stem).swift")
+        if let packageID {
+            outputDirectory.appending(subpath: packageID).appending("\(file.path.stem).swift")
+        } else {
+            outputDirectory.appending("\(file.path.stem).swift")
+        }
     }
 }
 
