@@ -24,9 +24,12 @@ extension Command {
             // Skip execution if the input hasn't changed
             print("XCStringsTool: Skipping generation for ‘\(file.path.lastComponent)‘, no changes detected.")
             return nil
+//            return .noopCommand(registeringOutputFiles: [
+//                context.outputPath(for: file)
+//            ])
         }
 
-        try FileManager().createDirectory(atPath: context.outputDirectory.string, withIntermediateDirectories: true)
+        try? FileManager().createDirectory(atPath: context.outputDirectory.string, withIntermediateDirectories: true)
 
         // Proceed with command execution
         let command = Command.buildCommand(
@@ -48,6 +51,18 @@ extension Command {
         try context.updateChecksum(for: file)
 
         return command
+    }
+}
+
+extension Command {
+    static func noopCommand(registeringOutputFiles outputFiles: [Path]) -> Command {
+        Command.buildCommand(
+            displayName: "No-Op Command",
+            executable: .init("/bin/echo"),
+            arguments: ["No operation"],
+            inputFiles: [],
+            outputFiles: outputFiles
+        )
     }
 }
 
