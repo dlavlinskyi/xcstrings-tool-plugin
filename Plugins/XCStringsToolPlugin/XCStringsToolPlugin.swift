@@ -14,6 +14,6 @@ struct XCStringsToolPlugin: BuildToolPlugin {
 
         return try sourceModule
             .sourceFiles(withSuffix: "xcstrings")
-            .map { try .xcstringstool(for: $0, using: context) }
+            .compactMap { try .xcstringstool(for: $0, using: context) }
     }
 }

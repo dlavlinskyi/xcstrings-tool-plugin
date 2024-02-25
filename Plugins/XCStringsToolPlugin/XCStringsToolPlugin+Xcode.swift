@@ -9,7 +9,7 @@ extension XCStringsToolPlugin: XcodeBuildToolPlugin {
     ) throws -> [Command] {
         try target.inputFiles
             .filter { $0.path.extension == "xcstrings" }
-            .map { try .xcstringstool(for: $0, using: context) }
+            .compactMap { try .xcstringstool(for: $0, using: context) }
     }
 }
 #endif
