@@ -23,10 +23,9 @@ extension Command {
         guard try context.shouldExecutePlugin(for: file) else {
             // Skip execution if the input hasn't changed
             print("XCStringsTool: Skipping generation for ‘\(file.path.lastComponent)‘, no changes detected.")
-            return nil
-//            return .noopCommand(registeringOutputFiles: [
-//                context.outputPath(for: file)
-//            ])
+            return .noopCommand(registeringOutputFiles: [
+                context.outputPath(for: file)
+            ])
         }
 
         try? FileManager().createDirectory(atPath: context.outputDirectory.string, withIntermediateDirectories: true)
