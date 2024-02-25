@@ -20,6 +20,12 @@ extension XcodePluginContext: PluginContextProtocol {
 
 extension Command {
     static func xcstringstool(for file: File, using context: PluginContextProtocol) throws -> Command? {
+        print("XCStringsTool: Starting at \(context.outputPath(for: file).string)")
+
+        print("XCStringsTool: xcodeProject.id \((context as? XcodePluginContext)?.xcodeProject.id)")
+        print("XCStringsTool: XcodePluginContext at \((context as? XcodePluginContext))")
+        print("XCStringsTool: PluginContext at \((context as? PluginContext)?.package.targets)")
+
         guard try context.shouldExecutePlugin(for: file) else {
             // Skip execution if the input hasn't changed
             print("XCStringsTool: Skipping generation for ‘\(file.path.lastComponent)‘, no changes detected.")
@@ -67,11 +73,7 @@ extension Command {
 
 extension PluginContextProtocol {
     var outputDirectory: Path {
-        if let packageID {
-            pluginWorkDirectory.appending(subpath: "XCStringsTool").appending(subpath: packageID)
-        } else {
-            pluginWorkDirectory.appending(subpath: "XCStringsTool")
-        }
+        pluginWorkDirectory.appending(subpath: "XCStringsTool").appending(subpath: packageID)
     }
 
     func outputPath(for file: File) -> Path {
