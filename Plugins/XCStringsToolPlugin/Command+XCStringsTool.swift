@@ -3,14 +3,19 @@ import PackagePlugin
 
 protocol PluginContextProtocol {
     var pluginWorkDirectory: PackagePlugin.Path { get }
+    var packageID: String { get }
     func tool(named name: String) throws -> PluginContext.Tool
 }
 
-extension PluginContext: PluginContextProtocol {}
+extension PluginContext: PluginContextProtocol {
+    var packageID: String { `package`.id }
+}
 
 #if canImport(XcodeProjectPlugin)
 import XcodeProjectPlugin
-extension XcodePluginContext: PluginContextProtocol {}
+extension XcodePluginContext: PluginContextProtocol {
+    var packageID: String { return xcodeProject.id }
+}
 #endif
 
 extension Command {
@@ -22,6 +27,8 @@ extension Command {
                 context.outputPath(for: file)
             ])
         }
+
+        try? FileManager().createDirectory(atPath: context.outputDirectory.string, withIntermediateDirectories: true)
 
         // Proceed with command execution
         let command = Command.buildCommand(
@@ -51,7 +58,7 @@ extension Command {
         Command.buildCommand(
             displayName: "No-Op Command",
             executable: .init("/bin/echo"),
-            arguments: ["No operation"],
+            arguments: ["No operation" + outputFiles.last!.string],
             inputFiles: [],
             outputFiles: outputFiles
         )
@@ -60,7 +67,11 @@ extension Command {
 
 extension PluginContextProtocol {
     var outputDirectory: Path {
-        pluginWorkDirectory.appending(subpath: "XCStringsTool")
+        if let packageID {
+            pluginWorkDirectory.appending(subpath: "XCStringsTool").appending(subpath: packageID)
+        } else {
+            pluginWorkDirectory.appending(subpath: "XCStringsTool")
+        }
     }
 
     func outputPath(for file: File) -> Path {
