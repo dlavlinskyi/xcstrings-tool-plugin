@@ -3,6 +3,14 @@ import PackagePlugin
 import Foundation
 
 extension PluginContextProtocol {
+    func ensureDirectoryExists(_ path: Path) throws {
+        let fileManager = FileManager.default
+        let directoryPath = URL(fileURLWithPath: path.string)
+        if !fileManager.fileExists(atPath: directoryPath.path) {
+            try fileManager.createDirectory(at: directoryPath, withIntermediateDirectories: true, attributes: nil)
+        }
+    }
+
     func calculateChecksum(for file: Path) throws -> String {
         let data = try Data(contentsOf: URL(fileURLWithPath: file.string))
         let digest = SHA256.hash(data: data)
@@ -10,10 +18,11 @@ extension PluginContextProtocol {
     }
 
     func shouldExecutePlugin(for file: File) throws -> Bool {
-        let markerPath = outputDirectory.appending("last_checksum")
-        let newChecksum = try calculateChecksum(for: file.path)
+        try ensureDirectoryExists(outputDirectory) // Ensure the directory for the marker exists
 
+        let markerPath = outputDirectory.appending("last_checksum")
         if let oldChecksum = try? String(contentsOf: URL(fileURLWithPath: markerPath.string)) {
+            let newChecksum = try calculateChecksum(for: file.path)
             return newChecksum != oldChecksum
         }
 
@@ -22,8 +31,10 @@ extension PluginContextProtocol {
     }
 
     func updateChecksum(for file: File) throws {
-        let checksum = try calculateChecksum(for: file.path)
+        try ensureDirectoryExists(outputDirectory) // Ensure the directory for the marker exists before writing
+
+        let newChecksum = try calculateChecksum(for: file.path)
         let markerPath = outputDirectory.appending("last_checksum")
-        try checksum.write(to: URL(fileURLWithPath: markerPath.string), atomically: true, encoding: .utf8)
+        try newChecksum.write(to: URL(fileURLWithPath: markerPath.string), atomically: true, encoding: .utf8)
     }
 }
