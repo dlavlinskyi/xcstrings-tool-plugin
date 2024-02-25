@@ -26,6 +26,8 @@ extension Command {
             return nil
         }
 
+        try FileManager().createDirectory(atPath: context.outputDirectory.string, withIntermediateDirectories: true)
+
         // Proceed with command execution
         let command = Command.buildCommand(
             displayName: "XCStringsTool: Generate Swift code for ‘\(file.path.lastComponent)‘",
@@ -51,15 +53,15 @@ extension Command {
 
 extension PluginContextProtocol {
     var outputDirectory: Path {
-        pluginWorkDirectory.appending(subpath: "XCStringsTool")
+        if let packageID {
+            pluginWorkDirectory.appending(subpath: "XCStringsTool").appending(subpath: packageID)
+        } else {
+            pluginWorkDirectory.appending(subpath: "XCStringsTool")
+        }
     }
 
     func outputPath(for file: File) -> Path {
-        if let packageID {
-            outputDirectory.appending(subpath: packageID).appending("\(file.path.stem).swift")
-        } else {
-            outputDirectory.appending("\(file.path.stem).swift")
-        }
+        outputDirectory.appending("\(file.path.stem).swift")
     }
 }
 
