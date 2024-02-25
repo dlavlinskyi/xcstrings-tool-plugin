@@ -3,6 +3,7 @@ import PackagePlugin
 
 protocol PluginContextProtocol {
     var pluginWorkDirectory: PackagePlugin.Path { get }
+    var package: PackagePlugin.Package { get }
     func tool(named name: String) throws -> PluginContext.Tool
 }
 
@@ -50,7 +51,7 @@ extension PluginContextProtocol {
     }
 
     func outputPath(for file: File) -> Path {
-        outputDirectory.appending("\(file.path.stem).swift")
+        outputDirectory.appending(subpath: `package`.id).appending("\(file.path.stem).swift")
     }
 }
 
