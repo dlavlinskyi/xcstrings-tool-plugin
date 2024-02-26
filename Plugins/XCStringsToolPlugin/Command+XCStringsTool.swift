@@ -8,7 +8,7 @@ protocol PluginContextProtocol {
 }
 
 extension PluginContext: PluginContextProtocol {
-    var packageID: String { `package`.targets.first?.name ?? "Unknown" }
+    var packageID: String { `package`.id }
 }
 
 #if canImport(XcodeProjectPlugin)
@@ -29,9 +29,7 @@ extension Command {
         guard try context.shouldExecutePlugin(for: file) else {
             // Skip execution if the input hasn't changed
             print("XCStringsTool: Skipping generation for ‘\(file.path.lastComponent)‘, no changes detected.")
-            return .noopCommand(registeringOutputFiles: [
-                context.outputPath(for: file)
-            ])
+            return .noopCommand(registeringOutputDirectory: context.outputPath(for: file).removingLastComponent())
         }
 
         try? FileManager().createDirectory(atPath: context.outputDirectory.string, withIntermediateDirectories: true)
@@ -60,13 +58,12 @@ extension Command {
 }
 
 extension Command {
-    static func noopCommand(registeringOutputFiles outputFiles: [Path]) -> Command {
-        Command.buildCommand(
+    static func noopCommand(registeringOutputDirectory outputDir: Path) -> Command {
+        Command.prebuildCommand(
             displayName: "No-Op Command",
             executable: .init("/bin/echo"),
-            arguments: ["No operation" + outputFiles.last!.string],
-            inputFiles: [],
-            outputFiles: outputFiles
+            arguments: ["No operation" + outputDir.string],
+            outputFilesDirectory: outputDir
         )
     }
 }
